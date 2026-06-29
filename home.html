@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALC | Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-flex">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fas fa-brain"></i></div>
+      <div class="logo-text">
+        <h1>The Advanced Learning <br>Collective</h1>
+        <span>Advancing Minds, Advancing Practice</span>
+      </div>
+      <div class="tagline-header"><i class="fas fa-chalkboard-user"></i> Professional Learning & Resource Network</div>
+    </div>
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="paths.html">Pathways</a>
+      <a href="learn.html">Learning</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="access.html" class="btn-outline"><i class="fas fa-user-plus"></i> Access</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge"><i class="fas fa-lightbulb"></i> Gifted & Advanced Excellence</div>
+        <h2>One collective.<br>Limitless potential.</h2>
+        <p>Curated professional learning, leadership tools, and family engagement resources — empowering every stakeholder in gifted and advanced education.</p>
+        <div class="hero-stats">
+          <div class="stat-item"><span class="stat-number">5</span> <br>Stakeholder Pathways</div>
+          <div class="stat-item"><span class="stat-number">150+</span><br>Curated Resources</div>
+          <div class="stat-item"><span class="stat-number">24/7</span><br>On-Demand Access</div>
+        </div>
+      </div>
+      <div class="quick-search">
+        <h3><i class="fas fa-magnifying-glass"></i> Quick resource access</h3>
+        <div class="search-box">
+          <input type="text" placeholder="Search differentiation guides, identification tools...">
+          <button><i class="fas fa-arrow-right"></i> Search</button>
+        </div>
+        <div class="featured-links">
+          <a href="resources.html">Depth & Complexity</a>
+          <a href="resources.html">FTE Reporting</a>
+          <a href="family.html">Family Workshops</a>
+          <a href="calendar.html">PD Calendar</a>
+        </div>
+        <p style="font-size: 0.75rem; margin-top: 20px;"><i class="fas fa-arrow-trend-up"></i> Featured: new gifted eligibility toolkit</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slideshow Section - Moved below hero -->
+  <section class="slideshow-section">
+    <div class="container">
+      <div class="slideshow-container">
+        <div class="slideshow-wrapper">
+          <div class="slideshow-slides" id="slideshowSlides">
+            <!-- Slides will be dynamically added by JavaScript -->
+            <div class="slide active">
+              <div class="slide-placeholder">
+                <i class="fas fa-image" style="font-size: 4rem; color: var(--gold-accent);"></i>
+                <p style="margin-top: 20px; color: rgba(255,255,255,0.7);">Loading slideshow images...</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigation Arrows -->
+          <button class="slide-arrow slide-arrow-left" id="slidePrev">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="slide-arrow slide-arrow-right" id="slideNext">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        
+        <!-- Dots/Indicators -->
+        <div class="slide-dots" id="slideDots">
+          <!-- Dots will be dynamically added by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Professional Pathways Section -->
+  <div class="container">
+    <h2 class="section-title">Professional pathways <span style="color: var(--primary-accent);">for every role</span></h2>
+    <p class="section-sub">Tailored learning & implementation supports — from gifted leads to families</p>
+    <div class="pathways-grid">
+      <div class="pathway-card">
+        <div class="card-icon"><i class="fas fa-flag-checkered"></i></div>
+        <h3>Program Leadership</h3>
+        <p>For Gifted Leads: compliance, identification, FTE & segment reporting, error resolution, state guidance, and lead meeting archives.</p>
+        <a href="leadership.html" class="path-link">Access leadership hub <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="pathway-card">
+        <div class="card-icon"><i class="fas fa-chalkboard-user"></i></div>
+        <h3>Advanced Practice</h3>
+        <p>For Teachers: differentiation, depth & complexity, PBL, inquiry-based learning, academic discourse, and instructional models.</p>
+        <a href="practice.html" class="path-link">Explore teacher toolkit <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="pathway-card">
+        <div class="card-icon"><i class="fas fa-people-arrows"></i></div>
+        <h3>Coaching for Impact</h3>
+        <p>For Instructional Coaches: advanced learner look-fors, observation protocols, coaching frameworks, and gifted instruction coaching.</p>
+        <a href="coaching.html" class="path-link">Coaching resources <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="pathway-card">
+        <div class="card-icon"><i class="fas fa-building-user"></i></div>
+        <h3>Strategic Leadership</h3>
+        <p>For Administrators: program evaluation, service models, staffing requirements, school improvement alignment, and leadership briefs.</p>
+        <a href="strategic.html" class="path-link">Admin strategic hub <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="pathway-card">
+        <div class="card-icon"><i class="fas fa-hand-holding-heart"></i></div>
+        <h3>Families as Partners</h3>
+        <p>For Parents & Families: understanding gifted identification, social-emotional needs, at-home strategies, and family workshops.</p>
+        <a href="family.html" class="path-link">Family connection <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources Spotlight & Calendar -->
+  <div class="container two-col-flex">
+    <div class="resources-preview">
+      <h3><i class="fas fa-star-of-life" style="color: var(--gold-accent);"></i> Resource spotlight</h3>
+      <div class="res-item">
+        <div class="res-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="res-info">
+          <h4>Depth & Complexity Framework Guide</h4>
+          <p>Implement proven strategies to elevate critical thinking for gifted learners.</p>
+        </div>
+      </div>
+      <div class="res-item">
+        <div class="res-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="res-info">
+          <h4>Gifted Program Monitoring Toolkit</h4>
+          <p>Checklists for compliance, error resolution, and data-driven program improvement.</p>
+        </div>
+      </div>
+      <div style="margin-top: 16px;"><a href="resources.html" style="font-weight: 600;">View all resources <i class="fas fa-arrow-right"></i></a></div>
+    </div>
+    <div class="calendar-preview">
+      <h3><i class="fas fa-calendar-alt"></i> Upcoming professional learning</h3>
+      <div class="event-item">
+        <div class="event-date">Feb 28</div>
+        <div><strong>Differentiation for Advanced Learners</strong><br>Virtual workshop • 3:30pm</div>
+      </div>
+      <div class="event-item">
+        <div class="event-date">Mar 5</div>
+        <div><strong>Gifted Lead Monthly Meeting</strong><br>Reciprocity & compliance update</div>
+      </div>
+      <div style="margin-top: 20px;"><a href="calendar.html" class="path-link">View full PD calendar <i class="fas fa-calendar-week"></i></a></div>
+    </div>
+  </div>
+
+  <!-- News & Updates -->
+  <div class="container">
+    <div class="news-section">
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center;">
+        <h3><i class="fas fa-bullhorn"></i> Platform news & updates</h3>
+        <span style="background: var(--gold-accent); padding: 4px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: bold;">New resource hub live</span>
+      </div>
+      <div class="update-list" style="margin-top: 24px;">
+        <div class="update-item"><i class="fas fa-check-circle"></i> <strong>Advanced Learning Collective launched</strong> – Six stakeholder-aligned pathways now available.</div>
+        <div class="update-item"><i class="fas fa-chalkboard"></i> <strong>March Lead Meeting resources uploaded</strong> – eligibility reciprocity slides.</div>
+        <div class="update-item"><i class="fas fa-users"></i> <strong>Family Workshop Series</strong> – registration now open.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department Contact -->
+  <div class="container" style="margin-bottom: 30px;">
+    <div style="background: var(--white); border-radius: 28px; padding: 28px 32px; box-shadow: var(--shadow-sm); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
+      <div>
+        <h4><i class="fas fa-envelope-open-text"></i> Department of Gifted & Advanced Learning</h4>
+        <p>Vikki Glover, Coordinator • <strong>gifted@alcnetwork.org</strong> • (555) 204-2330</p>
+      </div>
+      <div><i class="fas fa-map-pin"></i> District access | <i class="fab fa-slack"></i> Educator community</div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h3 style="color: white;">Advanced Learning Collective</h3>
+      <p>Advancing Minds, Advancing Practice</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Navigation</h4>
+      <p><a href="home.html">Home</a></p>
+      <p><a href="leadership.html">Leadership</a></p>
+      <p><a href="practice.html">Practice</a></p>
+      <p><a href="family.html">Family</a></p>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <p><a href="calendar.html">Calendar</a></p>
+      <p><a href="resources.html">Library</a></p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <p><i class="fas fa-envelope"></i> gifted@alcnetwork.org</p>
+    </div>
+  </div>
+  <div class="container copyright">
+    <p>© 2026 The Advanced Learning Collective — Capstone Project</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
