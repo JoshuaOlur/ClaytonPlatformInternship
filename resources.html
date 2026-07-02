@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALC | Resources</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-flex">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fas fa-brain"></i></div>
+      <div class="logo-text"><h1>The Advanced Learning Collective</h1><span>Advancing Minds, Advancing Practice</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="paths.html">Pathways</a>
+      <a href="learn.html">Learning</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="access.html" class="btn-outline">Access</a>
+      <span id="userGreeting" style="display: none; font-weight: 600; color: var(--primary-accent);"></span>
+      <button id="logoutBtn" onclick="logout()" style="display: none; background: none; border: 1px solid #dc3545; color: #dc3545; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="adminControls" style="display: none; position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 50;">
+    <button onclick="showUploadModal()" style="background: var(--primary-accent); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: var(--shadow-md); transition: 0.2s;">
+      <i class="fas fa-upload"></i>
+    </button>
+    <p style="font-size: 0.7rem; color: var(--text-soft); text-align: center; margin-top: 8px;">Upload</p>
+  </div>
+
+  <div id="uploadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--card-radius); padding: 40px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
+      <button onclick="closeUploadModal()" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-soft);">&times;</button>
+      <h3 style="margin-bottom: 24px;"><i class="fas fa-upload" style="color: var(--primary-accent);"></i> Upload Resource</h3>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">File Type:</label>
+        <select id="fileType" style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-light); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem;">
+          <option value="Depth & Complexity Framework">Depth & Complexity Framework</option>
+          <option value="Gifted Program Monitoring Toolkit">Gifted Program Monitoring Toolkit</option>
+          <option value="Differentiation Strategies">Differentiation Strategies</option>
+          <option value="PBL Unit Planner">PBL Unit Planner</option>
+          <option value="Family Engagement Guide">Family Engagement Guide</option>
+          <option value="Leadership Briefs Collection">Leadership Briefs Collection</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Select File:</label>
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif" style="width: 100%; padding: 12px; border: 2px dashed var(--gray-light); border-radius: 12px; cursor: pointer;">
+        <p style="font-size: 0.8rem; color: var(--text-soft); margin-top: 8px;">Accepted: PDF, DOC, DOCX, TXT, PNG, JPG, JPEG, GIF</p>
+      </div>
+      
+      <button onclick="uploadFile()" style="width: 100%; padding: 14px; background: var(--primary-accent); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+        <i class="fas fa-cloud-upload-alt"></i> Upload File
+      </button>
+    </div>
+  </div>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>Resource Library</h1>
+      <p id="welcomeMessage">All Documents • Tools • Templates • Guides</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Category Tabs -->
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin: 32px 0 24px 0; border-bottom: 2px solid var(--gray-light); padding-bottom: 16px;">
+      <button class="category-tab active" onclick="filterFiles('all')">All Resources</button>
+      <button class="category-tab" onclick="filterFiles('Depth & Complexity Framework')">Depth & Complexity</button>
+      <button class="category-tab" onclick="filterFiles('Gifted Program Monitoring Toolkit')">Gifted Monitoring</button>
+      <button class="category-tab" onclick="filterFiles('Differentiation Strategies')">Differentiation</button>
+      <button class="category-tab" onclick="filterFiles('PBL Unit Planner')">PBL Planner</button>
+      <button class="category-tab" onclick="filterFiles('Family Engagement Guide')">Family Engagement</button>
+      <button class="category-tab" onclick="filterFiles('Leadership Briefs Collection')">Leadership Briefs</button>
+    </div>
+
+    <!-- File Display Area -->
+    <div id="fileDisplayArea" style="min-height: 200px;">
+      <div id="fileList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+      <p id="noFiles" style="text-align: center; color: var(--text-soft); padding: 40px 0; display: none;">No files in this category yet.</p>
+    </div>
+
+    <!-- Default Resource Grid (shown when no files are uploaded) -->
+    <div id="defaultResourceGrid" class="resource-grid">
+      <div class="resource-card" onclick="filterFiles('Depth & Complexity Framework')">
+        <h3>Depth & Complexity Framework</h3>
+        <p>Complete guide with icons and lesson plans.</p>
+        <span class="resource-tag">Guide</span>
+      </div>
+      <div class="resource-card" onclick="filterFiles('Gifted Program Monitoring Toolkit')">
+        <h3>Gifted Program Monitoring Toolkit</h3>
+        <p>Compliance checklists and reporting templates.</p>
+        <span class="resource-tag">Toolkit</span>
+      </div>
+      <div class="resource-card" onclick="filterFiles('Differentiation Strategies')">
+        <h3>Differentiation Strategies</h3>
+        <p>50+ strategies for advanced learners.</p>
+        <span class="resource-tag">Strategies</span>
+      </div>
+      <div class="resource-card" onclick="filterFiles('PBL Unit Planner')">
+        <h3>PBL Unit Planner</h3>
+        <p>Templates for project-based learning design.</p>
+        <span class="resource-tag">Template</span>
+      </div>
+      <div class="resource-card" onclick="filterFiles('Family Engagement Guide')">
+        <h3>Family Engagement Guide</h3>
+        <p>Workshop plans and communication tools.</p>
+        <span class="resource-tag">Guide</span>
+      </div>
+      <div class="resource-card" onclick="filterFiles('Leadership Briefs Collection')">
+        <h3>Leadership Briefs Collection</h3>
+        <p>One-page summaries for administrators.</p>
+        <span class="resource-tag">Briefs</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-col"><h3 style="color: white;">ALC</h3><p>Resource Library</p></div>
+    <div class="footer-col"><h4>Links</h4><p><a href="index.html">Home</a></p><p><a href="resources.html">Resources</a></p></div>
+    <div class="footer-col"><h4>Contact</h4><p>gifted@alcnetwork.org</p></div>
+  </div>
+  <div class="container copyright"><p>© 2026 The Advanced Learning Collective</p></div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

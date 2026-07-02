@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALC | Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-flex">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fas fa-brain"></i></div>
+      <div class="logo-text"><h1>The Advanced Learning Collective</h1><span>Advancing Minds, Advancing Practice</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="paths.html">Pathways</a>
+      <a href="learn.html">Learning</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="access.html" class="btn-outline">Access</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="page-header">
+    <div class="container">
+      <h1>Stakeholder Access</h1>
+      <p>Sign in or create an account</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div style="display: flex; justify-content: center; gap: 16px; margin: 32px 0 40px 0;">
+      <button id="loginTab" class="access-tab active" onclick="switchAccessTab('login')">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+      <button id="createTab" class="access-tab" onclick="switchAccessTab('create')">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </div>
+
+    <div id="loginForm" style="max-width: 500px; margin: 0 auto 48px auto; background: white; border-radius: var(--card-radius); padding: 40px; box-shadow: var(--shadow-md);">
+      <h3 style="margin-bottom: 24px; text-align: center;">Sign In</h3>
+      <div class="search-box" style="margin-bottom: 16px;">
+        <input type="text" id="loginUsername" placeholder="Username or Email">
+      </div>
+      <div class="search-box" style="margin-bottom: 24px;">
+        <input type="password" id="loginPassword" placeholder="Password">
+      </div>
+      <button class="btn-outline" onclick="handleLogin()" style="width: 100%; text-align: center; display: block; background: var(--primary-accent); color: white; border: none; padding: 12px;">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+      <p style="text-align: center; margin-top: 16px; font-size: 0.85rem;">
+        <a href="#" style="color: var(--primary-accent);">Forgot password?</a>
+      </p>
+    </div>
+
+    <div id="createForm" style="max-width: 500px; margin: 0 auto 48px auto; background: white; border-radius: var(--card-radius); padding: 40px; box-shadow: var(--shadow-md); display: none;">
+      <h3 style="margin-bottom: 24px; text-align: center;">Create Account</h3>
+      
+      <div class="search-box" style="margin-bottom: 16px;">
+        <input type="text" id="createUsername" placeholder="Username">
+      </div>
+      <div class="search-box" style="margin-bottom: 16px;">
+        <input type="email" id="createEmail" placeholder="Email Address">
+      </div>
+      <div class="search-box" style="margin-bottom: 16px;">
+        <input type="password" id="createPassword" placeholder="Password (min 6 characters)">
+      </div>
+      <div class="search-box" style="margin-bottom: 24px;">
+        <input type="password" id="createConfirm" placeholder="Confirm Password">
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <p style="font-weight: 600; margin-bottom: 12px; color: var(--text-dark);">Account Type:</p>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 20px; border: 2px solid var(--gray-light); border-radius: 12px; transition: 0.2s; flex: 1; min-width: 120px;">
+            <input type="radio" name="accountType" value="admin" id="adminType" style="accent-color: var(--primary-accent);">
+            <i class="fas fa-user-shield" style="color: var(--gold-accent);"></i>
+            <span>Admin</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 20px; border: 2px solid var(--gray-light); border-radius: 12px; transition: 0.2s; flex: 1; min-width: 120px;">
+            <input type="radio" name="accountType" value="standard" id="standardType" checked style="accent-color: var(--primary-accent);">
+            <i class="fas fa-user" style="color: var(--primary-accent);"></i>
+            <span>Standard</span>
+          </label>
+        </div>
+      </div>
+      
+      <button class="btn-outline" onclick="handleCreateAccount()" style="width: 100%; text-align: center; display: block; background: var(--primary-accent); color: white; border: none; padding: 12px;">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+      <p style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--text-soft);">
+        Already have an account? <a href="#" onclick="switchAccessTab('login'); return false;" style="color: var(--primary-accent);">Sign in</a>
+      </p>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-col"><h3 style="color: white;">ALC</h3><p>Access Portal</p></div>
+    <div class="footer-col"><h4>Links</h4><p><a href="index.html">Home</a></p><p><a href="access.html">Access</a></p></div>
+    <div class="footer-col"><h4>Contact</h4><p>gifted@alcnetwork.org</p></div>
+  </div>
+  <div class="container copyright"><p>© 2026 The Advanced Learning Collective</p></div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
