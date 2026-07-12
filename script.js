@@ -7,6 +7,8 @@
 let currentUser = null;
 let uploadedFiles = [];
 let currentFilter = 'all';
+let learningFiles = [];
+let currentLearningFilter = 'all';
 
 // ============================================
 // 1. AUTHENTICATION SYSTEM
@@ -123,12 +125,10 @@ function handleCreateAccount() {
 }
 
 function getAccounts() {
-    // Try to load from localStorage first
     const data = localStorage.getItem('alcAccounts');
     if (data) {
         return JSON.parse(data);
     }
-    // If no accounts in localStorage, try to load from accounts.txt
     return loadAccountsFromFile();
 }
 
@@ -137,7 +137,6 @@ function saveAccounts(accounts) {
 }
 
 function loadAccountsFromFile() {
-    // Check if accounts data exists in localStorage
     const fileData = localStorage.getItem('accountsFileData');
     if (fileData) {
         try {
@@ -180,7 +179,6 @@ function loadAccountsFromFile() {
 }
 
 function saveAllAccountsToFile(accounts) {
-    // Format all accounts for the text file
     let fileContent = '';
     accounts.forEach(account => {
         fileContent += `================================\n`;
@@ -194,17 +192,13 @@ function saveAllAccountsToFile(accounts) {
         fileContent += `================================\n\n`;
     });
     
-    // Store the file content in localStorage for demo
-    // In a real server environment, this would write directly to accounts/accounts.txt
     localStorage.setItem('accountsFileData', fileContent);
-    
-    // Log to console for debugging
     console.log('Accounts saved to accounts/accounts.txt');
     console.log('Total accounts:', accounts.length);
 }
 
 // ============================================
-// 2. FILE MANAGEMENT SYSTEM
+// 2. FILE MANAGEMENT SYSTEM (Resources)
 // ============================================
 
 function showUploadModal() {
@@ -284,7 +278,6 @@ function deleteFile(fileId) {
 function filterFiles(category) {
     currentFilter = category;
     
-    // Update active tab
     document.querySelectorAll('.category-tab').forEach(tab => {
         tab.classList.remove('active');
         if (tab.textContent.trim() === category || (category === 'all' && tab.textContent.trim() === 'All Resources')) {
@@ -294,7 +287,6 @@ function filterFiles(category) {
     
     loadFileList(category);
     
-    // Hide/show default resource grid
     const defaultGrid = document.getElementById('defaultResourceGrid');
     if (defaultGrid) {
         const files = getFiles();
@@ -430,6 +422,279 @@ function escapeHtml(text) {
 }
 
 // ============================================
+// 2B. LEARNING FILE MANAGEMENT SYSTEM
+// ============================================
+
+function showLearningUploadModal() {
+    if (!currentUser || currentUser.accountType !== 'admin') {
+        showNotification('Admin access required', 'error');
+        return;
+    }
+    document.getElementById('learningUploadModal').style.display = 'flex';
+}
+
+function closeLearningUploadModal() {
+    document.getElementById('learningUploadModal').style.display = 'none';
+}
+
+function uploadLearningFile() {
+    const fileInput = document.getElementById('learningFileInput');
+    const fileType = document.getElementById('learningFileType').value;
+    const title = document.getElementById('learningFileTitle').value.trim();
+    const description = document.getElementById('learningFileDesc').value.trim();
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification('Please select a file to upload', 'error');
+        return;
+    }
+    
+    if (!title) {
+        showNotification('Please enter a title', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const fileData = {
+            id: 'learn_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+            name: file.name,
+            title: title,
+            description: description || 'No description provided',
+            type: fileType,
+            size: file.size,
+            mimeType: file.type,
+            data: e.target.result,
+            uploadedBy: currentUser.username,
+            uploadedAt: new Date().toISOString()
+        };
+        
+        const files = getLearningFiles();
+        files.push(fileData);
+        saveLearningFiles(files);
+        
+        closeLearningUploadModal();
+        showNotification(`✅ "${title}" uploaded successfully!`, 'success');
+        loadLearningFileList(currentLearningFilter);
+        
+        document.getElementById('learningFileInput').value = '';
+        document.getElementById('learningFileTitle').value = '';
+        document.getElementById('learningFileDesc').value = '';
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function getLearningFiles() {
+    const data = localStorage.getItem('alcLearningFiles');
+    return data ? JSON.parse(data) : [];
+}
+
+function saveLearningFiles(files) {
+    localStorage.setItem('alcLearningFiles', JSON.stringify(files));
+}
+
+function deleteLearningFile(fileId) {
+    if (!currentUser || currentUser.accountType !== 'admin') {
+        showNotification('Admin access required to delete files', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this learning resource?')) return;
+    
+    let files = getLearningFiles();
+    files = files.filter(f => f.id !== fileId);
+    saveLearningFiles(files);
+    showNotification('Learning resource deleted successfully', 'success');
+    loadLearningFileList(currentLearningFilter);
+}
+
+function filterLearningFiles(category) {
+    currentLearningFilter = category;
+    
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent.trim() === category || (category === 'all' && tab.textContent.trim() === 'All Resources')) {
+            tab.classList.add('active');
+        }
+    });
+    
+    loadLearningFileList(category);
+    
+    const defaultGrid = document.getElementById('defaultLearningGrid');
+    if (defaultGrid) {
+        const files = getLearningFiles();
+        const filteredFiles = category === 'all' ? files : files.filter(f => f.type === category);
+        if (filteredFiles.length === 0 && files.length === 0) {
+            defaultGrid.style.display = 'grid';
+        } else {
+            defaultGrid.style.display = 'none';
+        }
+    }
+}
+
+function loadLearningFileList(category = 'all') {
+    const fileList = document.getElementById('learningFileList');
+    const noFiles = document.getElementById('learningNoFiles');
+    const defaultGrid = document.getElementById('defaultLearningGrid');
+    
+    if (!fileList) return;
+    
+    const files = getLearningFiles();
+    const filteredFiles = category === 'all' ? files : files.filter(f => f.type === category);
+    
+    if (filteredFiles.length === 0) {
+        if (noFiles) {
+            noFiles.style.display = 'block';
+            noFiles.textContent = category === 'all' ? 'No learning resources uploaded yet. Upload a resource to get started!' : `No resources in "${category}" category yet.`;
+        }
+        fileList.innerHTML = '';
+        if (defaultGrid && files.length === 0) {
+            defaultGrid.style.display = 'grid';
+        } else if (defaultGrid) {
+            defaultGrid.style.display = 'none';
+        }
+        return;
+    }
+    
+    if (noFiles) noFiles.style.display = 'none';
+    if (defaultGrid) defaultGrid.style.display = 'none';
+    
+    fileList.innerHTML = filteredFiles.map(file => `
+        <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #eef2f6; transition: 0.2s;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                <div style="font-size: 2rem; color: var(--primary-accent);">
+                    <i class="${getLearningFileIcon(file.mimeType)}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="font-size: 1rem; margin-bottom: 4px;">${escapeHtml(file.title)}</h4>
+                    <span class="resource-tag">${escapeHtml(file.type)}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-soft); margin-left: 8px;">${formatFileSize(file.size)}</span>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-soft); margin-bottom: 12px;">${escapeHtml(file.description)}</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                ${isVideoFile(file.mimeType) ? `
+                    <button onclick="playVideo('${file.id}')" style="padding: 6px 16px; background: var(--primary-accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-play"></i> Watch
+                    </button>
+                ` : `
+                    <button onclick="viewLearningFile('${file.id}')" style="padding: 6px 16px; background: var(--primary-light); color: var(--primary-accent); border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                `}
+                <button onclick="downloadLearningFile('${file.id}')" style="padding: 6px 16px; background: var(--primary-light); color: var(--primary-accent); border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                ${currentUser && currentUser.accountType === 'admin' ? `
+                    <button onclick="deleteLearningFile('${file.id}')" style="padding: 6px 16px; background: #fee; color: #dc3545; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                ` : ''}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-soft); margin-top: 8px;">
+                Uploaded by ${escapeHtml(file.uploadedBy)} on ${new Date(file.uploadedAt).toLocaleDateString()}
+            </div>
+        </div>
+    `).join('');
+}
+
+function isVideoFile(mimeType) {
+    if (!mimeType) return false;
+    return mimeType.includes('video') || 
+           mimeType.includes('mp4') || 
+           mimeType.includes('webm') || 
+           mimeType.includes('ogg') ||
+           mimeType.includes('mov') ||
+           mimeType.includes('avi');
+}
+
+function getLearningFileIcon(mimeType) {
+    if (!mimeType) return 'fa-file';
+    if (isVideoFile(mimeType)) return 'fa-video';
+    if (mimeType.includes('pdf')) return 'fa-file-pdf';
+    if (mimeType.includes('word') || mimeType.includes('doc')) return 'fa-file-word';
+    if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'fa-file-excel';
+    if (mimeType.includes('image')) return 'fa-file-image';
+    if (mimeType.includes('text')) return 'fa-file-alt';
+    return 'fa-file';
+}
+
+function playVideo(fileId) {
+    const files = getLearningFiles();
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+        showNotification('File not found', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('videoPlayerModal');
+    const video = document.getElementById('videoPlayer');
+    const source = document.getElementById('videoSource');
+    const title = document.getElementById('videoTitle');
+    const desc = document.getElementById('videoDesc');
+    
+    source.src = file.data;
+    source.type = file.mimeType || 'video/mp4';
+    video.load();
+    
+    title.textContent = file.title;
+    desc.textContent = file.description;
+    
+    modal.style.display = 'flex';
+    video.play();
+}
+
+function closeVideoPlayer() {
+    const modal = document.getElementById('videoPlayerModal');
+    const video = document.getElementById('videoPlayer');
+    video.pause();
+    modal.style.display = 'none';
+}
+
+function viewLearningFile(fileId) {
+    const files = getLearningFiles();
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+        showNotification('File not found', 'error');
+        return;
+    }
+    
+    const win = window.open('', '_blank');
+    if (file.mimeType && file.mimeType.includes('image')) {
+        win.document.write(`<img src="${file.data}" style="max-width: 100%; margin: 20px auto; display: block;">`);
+    } else if (file.mimeType && file.mimeType.includes('pdf')) {
+        win.document.write(`<embed src="${file.data}" width="100%" height="100%" type="application/pdf">`);
+    } else {
+        const link = document.createElement('a');
+        link.href = file.data;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification('File downloaded', 'success');
+    }
+}
+
+function downloadLearningFile(fileId) {
+    const files = getLearningFiles();
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+        showNotification('File not found', 'error');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification('Downloading...', 'success');
+}
+
+// ============================================
 // 3. USER INTERFACE UPDATES
 // ============================================
 
@@ -444,7 +709,6 @@ function checkAuth() {
 }
 
 function updateUIForLoggedInUser() {
-    // Update greeting in navigation
     const greetingElements = document.querySelectorAll('#userGreeting');
     const logoutButtons = document.querySelectorAll('#logoutBtn');
     
@@ -457,13 +721,11 @@ function updateUIForLoggedInUser() {
         el.style.display = 'inline-block';
     });
     
-    // Update welcome message on resources page
     const welcomeMsg = document.getElementById('welcomeMessage');
     if (welcomeMsg) {
         welcomeMsg.textContent = `Welcome, ${currentUser.username}! • ${currentUser.accountType === 'admin' ? '🔑 Admin' : '👤 Standard'} User`;
     }
     
-    // Show admin controls if admin
     if (currentUser && currentUser.accountType === 'admin') {
         const adminControls = document.getElementById('adminControls');
         if (adminControls) adminControls.style.display = 'block';
@@ -475,7 +737,6 @@ function logout() {
     localStorage.removeItem('currentUser');
     showNotification('Logged out successfully', 'info');
     
-    // Reset UI
     const greetingElements = document.querySelectorAll('#userGreeting');
     const logoutButtons = document.querySelectorAll('#logoutBtn');
     greetingElements.forEach(el => {
@@ -522,12 +783,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Check auth on page load
     checkAuth();
     
-    // Load file list on resources page
     if (window.location.pathname.includes('resources.html')) {
         loadFileList('all');
+    }
+    
+    if (window.location.pathname.includes('learn.html')) {
+        loadLearningFileList('all');
+        if (currentUser && currentUser.accountType === 'admin') {
+            const adminControls = document.getElementById('adminControls');
+            if (adminControls) adminControls.style.display = 'block';
+        }
     }
 });
 
@@ -784,6 +1051,8 @@ document.addEventListener('keydown', function(e) {
         const notifications = document.querySelectorAll('.notification-popup');
         notifications.forEach(n => n.remove());
         closeUploadModal();
+        closeLearningUploadModal();
+        closeVideoPlayer();
     }
 });
 
