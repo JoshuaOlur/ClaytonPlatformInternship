@@ -23,27 +23,138 @@
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
       <a href="access.html" class="btn-outline">Access</a>
+      <span id="userGreeting" style="display: none; font-weight: 600; color: var(--primary-accent);"></span>
+      <button id="logoutBtn" onclick="logout()" style="display: none; background: none; border: 1px solid #dc3545; color: #dc3545; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </div>
   </div>
 </header>
 
-<section class="page-header">
-  <div class="container">
-    <h1>Professional Learning</h1>
-    <p>On-Demand • Live Sessions • Recordings</p>
+<main>
+  <!-- Admin Controls for Upload -->
+  <div id="adminControls" style="display: none; position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 50;">
+    <button onclick="showLearningUploadModal()" style="background: var(--primary-accent); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: var(--shadow-md); transition: 0.2s;">
+      <i class="fas fa-upload"></i>
+    </button>
+    <p style="font-size: 0.7rem; color: var(--text-soft); text-align: center; margin-top: 8px;">Upload</p>
   </div>
-</section>
 
-<div class="container">
-  <div class="resource-grid">
-    <div class="resource-card"><h3>On-Demand Modules</h3><p>Self-paced learning for differentiation and depth & complexity.</p><span class="resource-tag">Self-Paced</span></div>
-    <div class="resource-card"><h3>Live Workshop Recordings</h3><p>Access past session videos and materials.</p><span class="resource-tag">Video</span></div>
-    <div class="resource-card"><h3>Book Study Resources</h3><p>Guides for professional book discussions.</p><span class="resource-tag">Study</span></div>
-    <div class="resource-card"><h3>Micro-Learning Videos</h3><p>Short strategy demonstrations.</p><span class="resource-tag">Video</span></div>
-    <div class="resource-card"><h3>Implementation Guides</h3><p>Step-by-step for applying learning in classrooms.</p><span class="resource-tag">Guide</span></div>
-    <div class="resource-card"><h3>Certification Pathways</h3><p>Track professional growth and completion.</p><span class="resource-tag">Tracking</span></div>
+  <!-- Upload Modal -->
+  <div id="learningUploadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--card-radius); padding: 40px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
+      <button onclick="closeLearningUploadModal()" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-soft);">&times;</button>
+      <h3 style="margin-bottom: 24px;"><i class="fas fa-upload" style="color: var(--primary-accent);"></i> Upload Learning Resource</h3>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Resource Type:</label>
+        <select id="learningFileType" style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-light); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem;">
+          <option value="On-Demand Modules">On-Demand Modules</option>
+          <option value="Live Workshop Recordings">Live Workshop Recordings</option>
+          <option value="Book Study Resources">Book Study Resources</option>
+          <option value="Micro-Learning Videos">Micro-Learning Videos</option>
+          <option value="Implementation Guides">Implementation Guides</option>
+          <option value="Certification Pathways">Certification Pathways</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Title:</label>
+        <input type="text" id="learningFileTitle" placeholder="Enter resource title" style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-light); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Description:</label>
+        <textarea id="learningFileDesc" placeholder="Enter resource description" rows="3" style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-light); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem; resize: vertical;"></textarea>
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Select File:</label>
+        <input type="file" id="learningFileInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif,.mp4,.webm,.ogg,.mov,.avi" style="width: 100%; padding: 12px; border: 2px dashed var(--gray-light); border-radius: 12px; cursor: pointer;">
+        <p style="font-size: 0.8rem; color: var(--text-soft); margin-top: 8px;">Accepted: PDF, DOC, DOCX, TXT, PNG, JPG, JPEG, GIF, MP4, WEBM, OGG, MOV, AVI</p>
+      </div>
+      
+      <button onclick="uploadLearningFile()" style="width: 100%; padding: 14px; background: var(--primary-accent); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+        <i class="fas fa-cloud-upload-alt"></i> Upload Resource
+      </button>
+    </div>
   </div>
-</div>
+
+  <!-- Video Player Modal -->
+  <div id="videoPlayerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="position: relative; width: 90%; max-width: 900px; background: #000; border-radius: 16px; overflow: hidden;">
+      <button onclick="closeVideoPlayer()" style="position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10; padding: 8px 16px; border-radius: 8px;">&times;</button>
+      <video id="videoPlayer" controls style="width: 100%; display: block; max-height: 80vh;">
+        <source id="videoSource" src="" type="">
+        Your browser does not support the video tag.
+      </video>
+      <div id="videoInfo" style="padding: 16px 24px; background: #111; color: white;">
+        <h3 id="videoTitle" style="margin-bottom: 4px;">Video Title</h3>
+        <p id="videoDesc" style="opacity: 0.7; font-size: 0.9rem;">Video description</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>Professional Learning</h1>
+      <p id="welcomeMessage">On-Demand • Live Sessions • Recordings</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Category Tabs -->
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin: 32px 0 24px 0; border-bottom: 2px solid var(--gray-light); padding-bottom: 16px;">
+      <button class="category-tab active" onclick="filterLearningFiles('all')">All Resources</button>
+      <button class="category-tab" onclick="filterLearningFiles('On-Demand Modules')">On-Demand Modules</button>
+      <button class="category-tab" onclick="filterLearningFiles('Live Workshop Recordings')">Live Workshops</button>
+      <button class="category-tab" onclick="filterLearningFiles('Book Study Resources')">Book Studies</button>
+      <button class="category-tab" onclick="filterLearningFiles('Micro-Learning Videos')">Micro-Learning</button>
+      <button class="category-tab" onclick="filterLearningFiles('Implementation Guides')">Implementation</button>
+      <button class="category-tab" onclick="filterLearningFiles('Certification Pathways')">Certification</button>
+    </div>
+
+    <!-- File Display Area -->
+    <div id="learningFileDisplayArea" style="min-height: 200px;">
+      <div id="learningFileList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+      <p id="learningNoFiles" style="text-align: center; color: var(--text-soft); padding: 40px 0; display: none;">No learning resources in this category yet.</p>
+    </div>
+
+    <!-- Default Resource Grid (shown when no files are uploaded) -->
+    <div id="defaultLearningGrid" class="resource-grid">
+      <div class="resource-card" onclick="filterLearningFiles('On-Demand Modules')">
+        <h3>On-Demand Modules</h3>
+        <p>Self-paced learning for differentiation and depth & complexity.</p>
+        <span class="resource-tag">Self-Paced</span>
+      </div>
+      <div class="resource-card" onclick="filterLearningFiles('Live Workshop Recordings')">
+        <h3>Live Workshop Recordings</h3>
+        <p>Access past session videos and materials.</p>
+        <span class="resource-tag">Video</span>
+      </div>
+      <div class="resource-card" onclick="filterLearningFiles('Book Study Resources')">
+        <h3>Book Study Resources</h3>
+        <p>Guides for professional book discussions.</p>
+        <span class="resource-tag">Study</span>
+      </div>
+      <div class="resource-card" onclick="filterLearningFiles('Micro-Learning Videos')">
+        <h3>Micro-Learning Videos</h3>
+        <p>Short strategy demonstrations.</p>
+        <span class="resource-tag">Video</span>
+      </div>
+      <div class="resource-card" onclick="filterLearningFiles('Implementation Guides')">
+        <h3>Implementation Guides</h3>
+        <p>Step-by-step for applying learning in classrooms.</p>
+        <span class="resource-tag">Guide</span>
+      </div>
+      <div class="resource-card" onclick="filterLearningFiles('Certification Pathways')">
+        <h3>Certification Pathways</h3>
+        <p>Track professional growth and completion.</p>
+        <span class="resource-tag">Tracking</span>
+      </div>
+    </div>
+  </div>
+</main>
 
 <footer class="footer">
   <div class="container footer-grid">
@@ -53,6 +164,7 @@
   </div>
   <div class="container copyright"><p>© 2026 The Advanced Learning Collective</p></div>
 </footer>
+
 <script src="script.js"></script>
 </body>
 </html>
