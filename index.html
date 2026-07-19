@@ -50,9 +50,13 @@
       </div>
       <div class="quick-search">
         <h3><i class="fas fa-magnifying-glass"></i> Quick resource access</h3>
-        <div class="search-box">
-          <input type="text" placeholder="Search differentiation guides, identification tools...">
-          <button><i class="fas fa-arrow-right"></i> Search</button>
+        <div class="search-box" style="position: relative;">
+          <input type="text" id="globalSearch" placeholder="Search resources, learning, pathways..." autocomplete="off">
+          <button onclick="performGlobalSearch()"><i class="fas fa-arrow-right"></i> Search</button>
+          <!-- Search Results Dropdown -->
+          <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: var(--shadow-md); margin-top: 8px; max-height: 400px; overflow-y: auto; z-index: 1000; border: 1px solid var(--gray-light);">
+            <div id="searchResultsList"></div>
+          </div>
         </div>
         <div class="featured-links">
           <a href="resources.html">Depth & Complexity</a>
