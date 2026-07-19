@@ -9,6 +9,8 @@ let uploadedFiles = [];
 let currentFilter = 'all';
 let learningFiles = [];
 let currentLearningFilter = 'all';
+let pathwaysFiles = [];
+let currentPathwaysFilter = 'all';
 
 // ============================================
 // 1. AUTHENTICATION SYSTEM
@@ -695,6 +697,230 @@ function downloadLearningFile(fileId) {
 }
 
 // ============================================
+// 2C. PATHWAYS FILE MANAGEMENT SYSTEM
+// ============================================
+
+function showPathwaysUploadModal() {
+    if (!currentUser || currentUser.accountType !== 'admin') {
+        showNotification('Admin access required', 'error');
+        return;
+    }
+    document.getElementById('pathwaysUploadModal').style.display = 'flex';
+}
+
+function closePathwaysUploadModal() {
+    document.getElementById('pathwaysUploadModal').style.display = 'none';
+}
+
+function uploadPathwaysFile() {
+    const fileInput = document.getElementById('pathwaysFileInput');
+    const fileType = document.getElementById('pathwaysFileType').value;
+    const title = document.getElementById('pathwaysFileTitle').value.trim();
+    const description = document.getElementById('pathwaysFileDesc').value.trim();
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification('Please select a file to upload', 'error');
+        return;
+    }
+    
+    if (!title) {
+        showNotification('Please enter a title', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const fileData = {
+            id: 'path_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+            name: file.name,
+            title: title,
+            description: description || 'No description provided',
+            type: fileType,
+            size: file.size,
+            mimeType: file.type,
+            data: e.target.result,
+            uploadedBy: currentUser.username,
+            uploadedAt: new Date().toISOString()
+        };
+        
+        const files = getPathwaysFiles();
+        files.push(fileData);
+        savePathwaysFiles(files);
+        
+        closePathwaysUploadModal();
+        showNotification(`✅ "${title}" uploaded successfully!`, 'success');
+        loadPathwaysFileList(currentPathwaysFilter);
+        
+        document.getElementById('pathwaysFileInput').value = '';
+        document.getElementById('pathwaysFileTitle').value = '';
+        document.getElementById('pathwaysFileDesc').value = '';
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function getPathwaysFiles() {
+    const data = localStorage.getItem('alcPathwaysFiles');
+    return data ? JSON.parse(data) : [];
+}
+
+function savePathwaysFiles(files) {
+    localStorage.setItem('alcPathwaysFiles', JSON.stringify(files));
+}
+
+function deletePathwaysFile(fileId) {
+    if (!currentUser || currentUser.accountType !== 'admin') {
+        showNotification('Admin access required to delete files', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this pathway resource?')) return;
+    
+    let files = getPathwaysFiles();
+    files = files.filter(f => f.id !== fileId);
+    savePathwaysFiles(files);
+    showNotification('Pathway resource deleted successfully', 'success');
+    loadPathwaysFileList(currentPathwaysFilter);
+}
+
+function filterPathwaysFiles(category) {
+    currentPathwaysFilter = category;
+    
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent.trim() === category || (category === 'all' && tab.textContent.trim() === 'All Pathways')) {
+            tab.classList.add('active');
+        }
+    });
+    
+    loadPathwaysFileList(category);
+    
+    const defaultGrid = document.getElementById('defaultPathwaysGrid');
+    if (defaultGrid) {
+        const files = getPathwaysFiles();
+        const filteredFiles = category === 'all' ? files : files.filter(f => f.type === category);
+        if (filteredFiles.length === 0 && files.length === 0) {
+            defaultGrid.style.display = 'grid';
+        } else {
+            defaultGrid.style.display = 'none';
+        }
+    }
+}
+
+function loadPathwaysFileList(category = 'all') {
+    const fileList = document.getElementById('pathwaysFileList');
+    const noFiles = document.getElementById('pathwaysNoFiles');
+    const defaultGrid = document.getElementById('defaultPathwaysGrid');
+    
+    if (!fileList) return;
+    
+    const files = getPathwaysFiles();
+    const filteredFiles = category === 'all' ? files : files.filter(f => f.type === category);
+    
+    if (filteredFiles.length === 0) {
+        if (noFiles) {
+            noFiles.style.display = 'block';
+            noFiles.textContent = category === 'all' ? 'No pathway resources uploaded yet. Upload a resource to get started!' : `No resources in "${category}" category yet.`;
+        }
+        fileList.innerHTML = '';
+        if (defaultGrid && files.length === 0) {
+            defaultGrid.style.display = 'grid';
+        } else if (defaultGrid) {
+            defaultGrid.style.display = 'none';
+        }
+        return;
+    }
+    
+    if (noFiles) noFiles.style.display = 'none';
+    if (defaultGrid) defaultGrid.style.display = 'none';
+    
+    fileList.innerHTML = filteredFiles.map(file => `
+        <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #eef2f6; transition: 0.2s;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                <div style="font-size: 2rem; color: var(--primary-accent);">
+                    <i class="${getPathwaysFileIcon(file.mimeType)}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="font-size: 1rem; margin-bottom: 4px;">${escapeHtml(file.title)}</h4>
+                    <span class="resource-tag">${escapeHtml(file.type)}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-soft); margin-left: 8px;">${formatFileSize(file.size)}</span>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-soft); margin-bottom: 12px;">${escapeHtml(file.description)}</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="viewPathwaysFile('${file.id}')" style="padding: 6px 16px; background: var(--primary-light); color: var(--primary-accent); border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button onclick="downloadPathwaysFile('${file.id}')" style="padding: 6px 16px; background: var(--primary-light); color: var(--primary-accent); border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                ${currentUser && currentUser.accountType === 'admin' ? `
+                    <button onclick="deletePathwaysFile('${file.id}')" style="padding: 6px 16px; background: #fee; color: #dc3545; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                ` : ''}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-soft); margin-top: 8px;">
+                Uploaded by ${escapeHtml(file.uploadedBy)} on ${new Date(file.uploadedAt).toLocaleDateString()}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getPathwaysFileIcon(mimeType) {
+    if (!mimeType) return 'fa-file';
+    if (mimeType.includes('pdf')) return 'fa-file-pdf';
+    if (mimeType.includes('word') || mimeType.includes('doc')) return 'fa-file-word';
+    if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'fa-file-excel';
+    if (mimeType.includes('image')) return 'fa-file-image';
+    if (mimeType.includes('text')) return 'fa-file-alt';
+    return 'fa-file';
+}
+
+function viewPathwaysFile(fileId) {
+    const files = getPathwaysFiles();
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+        showNotification('File not found', 'error');
+        return;
+    }
+    
+    const win = window.open('', '_blank');
+    if (file.mimeType && file.mimeType.includes('image')) {
+        win.document.write(`<img src="${file.data}" style="max-width: 100%; margin: 20px auto; display: block;">`);
+    } else if (file.mimeType && file.mimeType.includes('pdf')) {
+        win.document.write(`<embed src="${file.data}" width="100%" height="100%" type="application/pdf">`);
+    } else {
+        const link = document.createElement('a');
+        link.href = file.data;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification('File downloaded', 'success');
+    }
+}
+
+function downloadPathwaysFile(fileId) {
+    const files = getPathwaysFiles();
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+        showNotification('File not found', 'error');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification('Downloading...', 'success');
+}
+
+// ============================================
 // 3. USER INTERFACE UPDATES
 // ============================================
 
@@ -757,7 +983,272 @@ function logout() {
 // 4. SEARCH FUNCTIONALITY
 // ============================================
 
+function performSearch(query) {
+    if (!query) {
+        showNotification('Please enter a search term', 'info');
+        return;
+    }
+    
+    const results = searchAllResources(query);
+    if (results.length > 0) {
+        showNotification(`Found ${results.length} results for "${query}"`, 'success');
+    } else {
+        showNotification(`No results found for "${query}"`, 'info');
+    }
+}
+
+// ============================================
+// 4B. GLOBAL SEARCH WITH AUTOCOMPLETE
+// ============================================
+
+function performGlobalSearch() {
+    const searchInput = document.getElementById('globalSearch');
+    const query = searchInput.value.trim();
+    
+    if (!query) {
+        showNotification('Please enter a search term', 'info');
+        return;
+    }
+    
+    const results = searchAllResources(query);
+    displaySearchResults(results, query);
+}
+
+function searchAllResources(query) {
+    const searchTerm = query.toLowerCase().trim();
+    const allResults = [];
+    
+    // Search Resources
+    const resources = getFiles();
+    resources.forEach(file => {
+        const match = file.name.toLowerCase().includes(searchTerm) || 
+                     file.type.toLowerCase().includes(searchTerm);
+        if (match) {
+            allResults.push({
+                title: file.name,
+                description: file.type,
+                type: 'Resource',
+                page: 'resources.html',
+                icon: getFileIcon(file.mimeType),
+                id: file.id,
+                category: 'resource'
+            });
+        }
+    });
+    
+    // Search Learning Resources
+    const learning = getLearningFiles();
+    learning.forEach(file => {
+        const match = file.title.toLowerCase().includes(searchTerm) || 
+                     file.description.toLowerCase().includes(searchTerm) ||
+                     file.name.toLowerCase().includes(searchTerm);
+        if (match) {
+            allResults.push({
+                title: file.title,
+                description: file.description,
+                type: 'Learning',
+                page: 'learn.html',
+                icon: getLearningFileIcon(file.mimeType),
+                id: file.id,
+                category: 'learning'
+            });
+        }
+    });
+    
+    // Search Pathways Resources
+    const pathways = getPathwaysFiles();
+    pathways.forEach(file => {
+        const match = file.title.toLowerCase().includes(searchTerm) || 
+                     file.description.toLowerCase().includes(searchTerm) ||
+                     file.name.toLowerCase().includes(searchTerm);
+        if (match) {
+            allResults.push({
+                title: file.title,
+                description: file.description,
+                type: 'Pathway',
+                page: 'paths.html',
+                icon: getPathwaysFileIcon(file.mimeType),
+                id: file.id,
+                category: 'pathway'
+            });
+        }
+    });
+    
+    // Add static content matches
+    const staticContent = [
+        { title: 'Depth & Complexity Framework', description: 'Complete guide with icons and lesson plans', type: 'Resource', page: 'resources.html', icon: 'fa-layer-group' },
+        { title: 'Gifted Program Monitoring Toolkit', description: 'Compliance checklists and reporting templates', type: 'Resource', page: 'resources.html', icon: 'fa-toolbox' },
+        { title: 'Differentiation Strategies', description: '50+ strategies for advanced learners', type: 'Resource', page: 'resources.html', icon: 'fa-chalkboard-teacher' },
+        { title: 'PBL Unit Planner', description: 'Templates for project-based learning design', type: 'Resource', page: 'resources.html', icon: 'fa-project-diagram' },
+        { title: 'Family Engagement Guide', description: 'Workshop plans and communication tools', type: 'Resource', page: 'resources.html', icon: 'fa-users' },
+        { title: 'Leadership Briefs Collection', description: 'One-page summaries for administrators', type: 'Resource', page: 'resources.html', icon: 'fa-file-alt' },
+        { title: 'On-Demand Modules', description: 'Self-paced learning for differentiation and depth & complexity', type: 'Learning', page: 'learn.html', icon: 'fa-video' },
+        { title: 'Live Workshop Recordings', description: 'Access past session videos and materials', type: 'Learning', page: 'learn.html', icon: 'fa-video' },
+        { title: 'Book Study Resources', description: 'Guides for professional book discussions', type: 'Learning', page: 'learn.html', icon: 'fa-book' },
+        { title: 'Micro-Learning Videos', description: 'Short strategy demonstrations', type: 'Learning', page: 'learn.html', icon: 'fa-video' },
+        { title: 'Implementation Guides', description: 'Step-by-step for applying learning in classrooms', type: 'Learning', page: 'learn.html', icon: 'fa-book' },
+        { title: 'Certification Pathways', description: 'Track professional growth and completion', type: 'Learning', page: 'learn.html', icon: 'fa-certificate' }
+    ];
+    
+    staticContent.forEach(content => {
+        const match = content.title.toLowerCase().includes(searchTerm) || 
+                     content.description.toLowerCase().includes(searchTerm);
+        if (match) {
+            allResults.push({
+                title: content.title,
+                description: content.description,
+                type: content.type,
+                page: content.page,
+                icon: content.icon,
+                id: null,
+                category: 'static'
+            });
+        }
+    });
+    
+    return allResults;
+}
+
+function displaySearchResults(results, query) {
+    const dropdown = document.getElementById('searchDropdown');
+    const resultsList = document.getElementById('searchResultsList');
+    
+    if (!dropdown || !resultsList) return;
+    
+    if (results.length === 0) {
+        resultsList.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: var(--text-soft);">
+                <i class="fas fa-search" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+                No results found for "<strong>${escapeHtml(query)}</strong>"
+            </div>
+        `;
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    // Group results by type
+    const groupedResults = {
+        'Resource': [],
+        'Learning': [],
+        'Pathway': []
+    };
+    
+    results.forEach(result => {
+        if (groupedResults[result.type]) {
+            groupedResults[result.type].push(result);
+        }
+    });
+    
+    let html = '';
+    
+    // Add results grouped by type
+    Object.keys(groupedResults).forEach(type => {
+        if (groupedResults[type].length > 0) {
+            html += `
+                <div style="padding: 8px 16px; background: var(--gray-light); font-weight: 600; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${type}s
+                </div>
+            `;
+            
+            groupedResults[type].forEach(result => {
+                html += `
+                    <div class="search-result-item" onclick="navigateToResult('${result.page}', '${result.id || ''}', '${result.category}')" 
+                         style="padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid var(--gray-light); transition: 0.2s;">
+                        <div style="font-size: 1.5rem; color: var(--primary-accent); width: 40px; text-align: center;">
+                            <i class="fas ${result.icon}"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; color: var(--text-dark);">${highlightText(result.title, query)}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${highlightText(result.description, query)}
+                            </div>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-soft); background: var(--gray-light); padding: 4px 12px; border-radius: 12px; white-space: nowrap;">
+                            ${result.type}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    });
+    
+    resultsList.innerHTML = html;
+    dropdown.style.display = 'block';
+}
+
+function highlightText(text, query) {
+    if (!text) return '';
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    return text.replace(regex, '<span style="background: var(--gold-accent); padding: 0 4px; border-radius: 4px; font-weight: 600;">$1</span>');
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function navigateToResult(page, id, category) {
+    // Close dropdown
+    const dropdown = document.getElementById('searchDropdown');
+    const searchInput = document.getElementById('globalSearch');
+    if (dropdown) dropdown.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    
+    if (id && category) {
+        // Navigate to the specific page and scroll to the item
+        window.location.href = page;
+        // Store the ID to highlight after page load
+        sessionStorage.setItem('highlightItem', id);
+        sessionStorage.setItem('highlightCategory', category);
+    } else {
+        window.location.href = page;
+    }
+}
+
+// Function to highlight items on page load
+function highlightSearchResult() {
+    const highlightId = sessionStorage.getItem('highlightItem');
+    const highlightCategory = sessionStorage.getItem('highlightCategory');
+    
+    if (highlightId && highlightCategory) {
+        // Clear the session storage
+        sessionStorage.removeItem('highlightItem');
+        sessionStorage.removeItem('highlightCategory');
+        
+        // Wait for the page to fully load
+        setTimeout(() => {
+            let items;
+            if (highlightCategory === 'resource') {
+                items = document.querySelectorAll('#fileList > div');
+            } else if (highlightCategory === 'learning') {
+                items = document.querySelectorAll('#learningFileList > div');
+            } else if (highlightCategory === 'pathway') {
+                items = document.querySelectorAll('#pathwaysFileList > div');
+            }
+            
+            if (items && items.length > 0) {
+                items.forEach(item => {
+                    // Check if the item contains the ID
+                    if (item.innerHTML.includes(highlightId)) {
+                        item.style.border = '3px solid var(--gold-accent)';
+                        item.style.boxShadow = '0 0 20px rgba(230, 177, 46, 0.3)';
+                        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        showNotification('🔍 Found your search result!', 'success');
+                    }
+                });
+            } else {
+                // If items not found, show a notification
+                showNotification('🔍 Search result found! Check the page for highlighted items.', 'success');
+            }
+        }, 500);
+    }
+}
+
+// ============================================
+// 4C. SEARCH DROPDOWN EVENTS
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Original DOMContentLoaded code - search buttons
     const searchButtons = document.querySelectorAll('.search-box button');
     const searchInputs = document.querySelectorAll('.search-box input');
     
@@ -783,8 +1274,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Global search with autocomplete
+    const searchInput = document.getElementById('globalSearch');
+    const searchDropdown = document.getElementById('searchDropdown');
+    
+    if (searchInput && searchDropdown) {
+        // Show dropdown on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length >= 2) {
+                const results = searchAllResources(query);
+                displaySearchResults(results, query);
+            } else if (query.length === 0) {
+                searchDropdown.style.display = 'none';
+            } else {
+                // Show "type more" message for short queries
+                const resultsList = document.getElementById('searchResultsList');
+                if (resultsList) {
+                    resultsList.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: var(--text-soft);">
+                            <i class="fas fa-keyboard" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+                            Type at least 2 characters to search
+                        </div>
+                    `;
+                }
+                searchDropdown.style.display = 'block';
+            }
+        });
+        
+        // Close dropdown on escape
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                searchDropdown.style.display = 'none';
+                this.blur();
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-box')) {
+                searchDropdown.style.display = 'none';
+            }
+        });
+        
+        // Handle enter key for search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performGlobalSearch();
+                searchDropdown.style.display = 'none';
+            }
+        });
+    }
+    
+    // Check auth on page load
     checkAuth();
     
+    // Load files on respective pages
     if (window.location.pathname.includes('resources.html')) {
         loadFileList('all');
     }
@@ -796,40 +1342,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (adminControls) adminControls.style.display = 'block';
         }
     }
-});
-
-function performSearch(query) {
-    const searchResults = {
-        'differentiation': 'Found 12 resources on differentiation for advanced learners',
-        'gifted': 'Found 28 resources on gifted education',
-        'depth': 'Found 8 resources on Depth & Complexity strategies',
-        'complexity': 'Found 8 resources on Depth & Complexity strategies',
-        'pbl': 'Found 15 resources on Project-Based Learning',
-        'inquiry': 'Found 10 resources on Inquiry-Based Learning',
-        'compliance': 'Found 7 resources on compliance and accountability',
-        'identification': 'Found 9 resources on gifted identification',
-        'family': 'Found 14 resources for families',
-        'coaching': 'Found 11 resources for instructional coaches',
-        'leadership': 'Found 16 resources for leadership'
-    };
     
-    let resultMessage = '';
-    let found = false;
-    
-    for (let [key, message] of Object.entries(searchResults)) {
-        if (query.toLowerCase().includes(key) || key.includes(query.toLowerCase())) {
-            resultMessage = message;
-            found = true;
-            break;
+    if (window.location.pathname.includes('paths.html')) {
+        loadPathwaysFileList('all');
+        if (currentUser && currentUser.accountType === 'admin') {
+            const adminControls = document.getElementById('adminControls');
+            if (adminControls) adminControls.style.display = 'block';
         }
     }
     
-    if (!found) {
-        resultMessage = `Search results for "${query}": No exact matches found. Try: differentiation, gifted, depth, complexity, PBL, inquiry, compliance, identification, family, coaching, or leadership.`;
-    }
-    
-    showNotification(resultMessage, 'search');
-}
+    // Check for search highlight on page load
+    highlightSearchResult();
+});
 
 // ============================================
 // 5. NOTIFICATION SYSTEM
@@ -1040,7 +1564,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
-        const searchInput = document.querySelector('.search-box input');
+        const searchInput = document.getElementById('globalSearch') || document.querySelector('.search-box input');
         if (searchInput) {
             searchInput.focus();
             showNotification('🔍 Search activated. Type your query.', 'info');
@@ -1052,7 +1576,11 @@ document.addEventListener('keydown', function(e) {
         notifications.forEach(n => n.remove());
         closeUploadModal();
         closeLearningUploadModal();
+        closePathwaysUploadModal();
         closeVideoPlayer();
+        
+        const dropdown = document.getElementById('searchDropdown');
+        if (dropdown) dropdown.style.display = 'none';
     }
 });
 
